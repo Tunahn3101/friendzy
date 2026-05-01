@@ -1,5 +1,5 @@
 //
-//  AddFriendView.swift
+//  MessageView.swift
 //  friendzy
 //
 //  Created by Phạm Tuấn Anh on 1/5/26.
@@ -7,14 +7,15 @@
 
 import SwiftUI
 
-struct AddFriendView: View {
+struct MessageView: View {
     var body: some View {
         VStack {
-            Text("Add Friend View")
+            Text("Message View")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
         .navigationBarBackButtonHidden(true)
+        
     }
 }
 

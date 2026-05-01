@@ -19,30 +19,29 @@ class SplashViewModel: ObservableObject {
 
     func loadSplash() async {
         loadStatus = .loading
-        Task {
-            if let store = store {
-
-                try await store.loadInitData(onProgress: {
-                    progress in
-                    Task {
-                        @MainActor in self.percent = progress
+        
+        // Load data - KHÔNG dùng nested Task nữa, await trực tiếp
+        if let store = store {
+            do {
+                try await store.loadInitData(onProgress: { progress in
+                    Task { @MainActor in
+                        self.percent = progress
                     }
                 })
-            } else {
-                for i in 1...10 {
-                    try? await Task.sleep(nanoseconds: 150_000_000)
-                    await MainActor.run {
-                        self.percent = Double(i) / 10.0
-                    }
-                }
+            } catch {
+                loadStatus = .failure(msg: "Load failed: \(error.localizedDescription)")
+                return
             }
-
-            await MainActor.run {
-                loadStatus = .success
-
+        } else {
+            // Mock loading khi không có store
+            for i in 1...10 {
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                self.percent = Double(i) / 10.0  // @MainActor ở class level
             }
-
         }
+        
+        // Load xong → set success và load user state
+        loadStatus = .success
         isFirstStart = store?.isirstStart() ?? true
         isLoggedIn = store?.isLoggedIn() ?? false
     }

@@ -1,5 +1,5 @@
 //
-//  AddFriendView.swift
+//  MatchesView.swift
 //  friendzy
 //
 //  Created by Phạm Tuấn Anh on 1/5/26.
@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct AddFriendView: View {
+struct MatchesView: View {
     var body: some View {
         VStack {
-            Text("Add Friend View")
+            
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)

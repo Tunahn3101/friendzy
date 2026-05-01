@@ -10,7 +10,6 @@ import SwiftUI
 struct ContentView: View {
 
     @StateObject var store = StoreEnv(store: StoreImpl())
-    
     var body: some View {
         NavigationStack {
             SplashView()
