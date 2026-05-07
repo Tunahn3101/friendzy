@@ -10,18 +10,13 @@ import SwiftUI
 
 // MARK: - App Constants
 enum AppConstants {
-    // API URLs (cho sau này)
-    static let baseURL = "https://api.friendzy.com"
-    static let apiVersion = "v1"
-    
-    // UserDefaults Keys
+
     enum UserDefaultsKeys {
         static let isLoggedIn = "isLoggedIn"
         static let savedFriends = "SavedFriends"
         static let currentUser = "CurrentUser"
     }
-    
-    // Colors
+
     enum Colors {
         static let primaryColor = Color.blue
         static let secondaryColor = Color.gray

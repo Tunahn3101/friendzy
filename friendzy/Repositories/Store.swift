@@ -23,3 +23,4 @@ protocol Store {
     func setLoggedIn(_ value: Bool)
 
 }
+
