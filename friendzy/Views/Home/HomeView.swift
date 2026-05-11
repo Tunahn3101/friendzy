@@ -82,6 +82,7 @@ struct HomeView: View {
     @State private var seenStories: Set<UUID> = []
     @State private var showingStoryViewer = false
     @State private var selectedStoryIndex: Int? = nil
+    @State private var selectedTab: BodyHomeView.Tab = .makeFiends
 
     private let seenKey = "seenStories"
 
@@ -120,6 +121,19 @@ struct HomeView: View {
                 story in
                 handleStoryTap(story)
             }
+            BodyHomeView(selectedTab: $selectedTab)
+
+            // Content for selected tab
+            Group {
+                switch selectedTab {
+                case .makeFiends:
+                    MakeFriendsView()
+                case .searchPartners:
+                    SearchPartnersView()
+                }
+            }
+            .padding(.top, 24)
+
             Spacer()
         }
         .navigationBarBackButtonHidden(true)
@@ -500,8 +514,9 @@ struct HomeStory: View {
                     .animation(.easeInOut, value: isSeen)
                 }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
+            .padding( 16)
+          
+        
         }
         .frame(height: 110)
     }
@@ -530,7 +545,6 @@ struct HomeHeader: View {
 
     }
 }
-
 
 // Gradient ring like Instagram
 struct StoryGradientRing: View {
@@ -591,6 +605,146 @@ struct PlayerContainerView: UIViewRepresentable {
         override func layoutSubviews() {
             super.layoutSubviews()
             playerLayer.frame = bounds
+        }
+    }
+}
+
+struct BodyHomeView: View {
+    @Binding var selectedTab: Tab
+    enum Tab: String, CaseIterable {
+        case makeFiends = "Make Friends"
+        case searchPartners = "Search Partners"
+    }
+
+    var body: some View {
+        VStack {
+            HStack(spacing: 4) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor( .black )
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            Group {
+                                if selectedTab == tab {
+                                    Color.white
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedTab = tab
+                            }
+                        }
+                }
+            }
+            .padding(4)
+            .frame(maxWidth: .infinity)
+            .background(Color(hex: "0xFFF8E7F6"))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal, 16)
+        }
+    }
+}
+
+// MARK: - Tab content views
+struct MakeFriendsView: View {
+    // sample data
+    let people: [(name: String, avatar: String)] = [
+        ("Alex", "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_2.png"),
+        ("Bella", "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png"),
+        ("Chris", "https://cdn.jsdelivr.net/gh/alohe/avatars/png/bluey_1.png"),
+        ("Dana", "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_1.png"),
+    ]
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                ForEach(people, id: \.name) { p in
+                    HStack(spacing: 12) {
+                        KFImage(URL(string: p.avatar))
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(p.name)
+                                .font(.headline)
+                                .foregroundColor(Color(hex: "0xFF4B164C"))
+                            Text("5 mutual friends")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Button(action: {}) {
+                            Text("Add")
+                                .font(.system(size: 14, weight: .semibold))
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(Color(hex: "0xFF4B164C"))
+                                .foregroundColor(.white)
+                                .cornerRadius(20)
+                        }
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        }
+    }
+}
+
+struct SearchPartnersView: View {
+    @State private var query: String = ""
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                TextField("Search partners", text: $query)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                Button(action: {}) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(Color(hex: "0xFF4B164C"))
+                        .cornerRadius(8)
+                }
+            }
+            .padding(.horizontal, 16)
+
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(0..<8) { i in
+                        VStack(spacing: 8) {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 80)
+                                .foregroundColor(Color(hex: "0xFF4B164C"))
+                            Text("User \(i + 1)")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            }
         }
     }
 }
