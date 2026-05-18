@@ -33,42 +33,40 @@ extension View {
 
 struct HomeView: View {
     let listStories: [Story] = listStoriesSample
-    
+
     @State private var seenStories: Set<UUID> = []
     @State private var showingStoryViewer = false
     @State private var selectedStoryIndex: Int? = nil
     @State private var selectedTab: BodyHomeView.Tab = .makeFiends
-    
+    // FocusState moved to root so tapping anywhere can dismiss keyboard
+    @FocusState private var isSearchFocused: Bool
+
     private let seenKey = "seenStories"
-    
+
     private func loadSeenStories() {
         if let arr = UserDefaults.standard.stringArray(forKey: seenKey) {
             let ids = arr.compactMap { UUID(uuidString: $0) }
             seenStories = Set(ids)
         }
     }
-    
+
     private func saveSeenStories() {
         let arr = seenStories.map { $0.uuidString }
         UserDefaults.standard.set(arr, forKey: seenKey)
     }
-    
+
     // Xử lý khi nhấn vào story: mở StoryViewer tại vị trí tương ứng
     // Xử lý khi nhấn vào story: chỉ mở StoryViewer nếu story có video
     private func handleStoryTap(_ story: Story) {
-        // nếu không có video thì không làm gì
         guard story.localVideoName != nil else { return }
-        
-        // đánh dấu đã xem và lưu
         seenStories.insert(story.id)
         saveSeenStories()
-        
         if let idx = listStories.firstIndex(where: { $0.id == story.id }) {
             selectedStoryIndex = idx
             showingStoryViewer = true
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HomeHeader()
@@ -76,17 +74,18 @@ struct HomeView: View {
                 handleStoryTap(story)
             }
             BodyHomeView(selectedTab: $selectedTab)
-            
+
             Group {
                 switch selectedTab {
                 case .makeFiends:
                     MakeFriendsView()
                 case .searchPartners:
-                    SearchPartnersView()
+                    // pass FocusState binding down so child won't own focus
+                    SearchPartnersView(searchFocused: $isSearchFocused)
                 }
             }
             .padding(.top, 24)
-            
+
             Spacer()
         }
         .navigationBarBackButtonHidden(true)
@@ -94,6 +93,8 @@ struct HomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.appBackground)
         .onAppear { loadSeenStories() }
+        // tapping anywhere in the root VStack will dismiss the keyboard
+        .onTapGesture { isSearchFocused = false }
         .fullScreenCover(
             isPresented: $showingStoryViewer,
             onDismiss: { selectedStoryIndex = nil }
@@ -109,8 +110,7 @@ struct HomeView: View {
             )
         }
     }
-    
-    
+
     // StoryViewer full-screen: hiển thị video (nếu có trong bundle) với thanh tiến trình ở trên,
     // vuốt trái/phải để chuyển người có video, vuốt xuống để đóng. Không hiển thị control hệ thống.
     struct StoryViewer: View {
@@ -665,14 +665,46 @@ struct HomeView: View {
     
     struct SearchPartnersView: View {
         @State private var query: String = ""
+
+        // Focus binding from parent
+        var searchFocused: FocusState<Bool>.Binding
+
+        // data source: reuse sample list
+        private let allPartners: [MakeFriendsModel] = listMakeFriendsSample
+
+        // search by name only
+        private var filteredPartners: [MakeFriendsModel] {
+            let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !q.isEmpty else { return allPartners }
+            return allPartners.filter { $0.name.lowercased().contains(q) }
+        }
+
         var body: some View {
             VStack(spacing: 12) {
                 HStack {
-                    TextField("Search partners", text: $query)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    Button(action: {}) {
+                    // TextField with clear button overlay
+                    ZStack {
+                        TextField("Search partners", text: $query)
+                            .padding(10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
+                            .focused(searchFocused)
+                            .submitLabel(.search)
+                            .onSubmit { searchFocused.wrappedValue = false }
+
+                        HStack {
+                            Spacer()
+                            if !query.isEmpty {
+                                Button(action: { query = "" }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.trailing, 10)
+                            }
+                        }
+                    }
+
+                    Button(action: { searchFocused.wrappedValue = false }) {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.white)
                             .padding(10)
@@ -681,33 +713,29 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                
+
                 ScrollView {
-                    LazyVGrid(
-                        columns: [GridItem(.flexible()), GridItem(.flexible())],
-                        spacing: 12
-                    ) {
-                        ForEach(0..<8) { i in
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ForEach(filteredPartners) { p in
                             VStack(spacing: 8) {
-                                Image(systemName: "person.crop.circle.fill")
+                                KFImage(URL(string: p.avatarURL))
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 80)
-                                    .foregroundColor(Color(hex: "0xFF4B164C"))
-                                Text("User \(i + 1)")
+                                    .scaledToFill()
+                                    .frame(height: 100)
+                                    .clipped()
+                                    .cornerRadius(8)
+                                Text(p.name.uppercased())
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
+                                Text(p.location.uppercased())
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.white)
                             .cornerRadius(12)
-                            .shadow(
-                                color: Color.black.opacity(0.04),
-                                radius: 4,
-                                x: 0,
-                                y: 2
-                            )
+                            .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
                         }
                     }
                     .padding(.horizontal, 16)
