@@ -19,13 +19,12 @@ struct TutorialsView: View {
         "the_meeting",
     ]
 
-  
     private let featureItems: [ItemCore] = [
         ItemCore(icon: "heart.fill", text: "Find Love"),
         ItemCore(icon: "message.fill", text: "Chat Instantly", color: .blue),
         ItemCore(icon: "star.fill", text: "Premium Features", color: .orange),
-//        ItemCore(icon: "person.2.fill", text: "Meet Friends", color: .green),
-//        ItemCore(icon: "sparkles", text: "AI Matching", color: .purple),
+        //        ItemCore(icon: "person.2.fill", text: "Meet Friends", color: .green),
+        //        ItemCore(icon: "sparkles", text: "AI Matching", color: .purple),
     ]
 
     private let timer = Timer.publish(every: 2.5, on: .main, in: .common)
@@ -49,15 +48,39 @@ struct TutorialsView: View {
                 // Layer 1: TabView (ẨN dots mặc định)
                 TabView(selection: $currentIndex) {
                     ForEach(0..<images.count, id: \.self) { index in
-                        Image(images[index])
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity)
-                            .clipped()
-                            .tag(index)
+
+                        ZStack {
+                            Image(images[index])
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .clipped()
+                                .tag(index)
+
+                            UserMatch()
+                                .frame(
+                                    maxWidth: .infinity,
+                                    maxHeight: .infinity,
+                                    alignment: .topLeading
+                                )
+                                .padding(.top, 32)
+                                .padding(.leading, 16)
+
+                            CardMusic()
+                                .frame(
+                                    maxWidth: .infinity,
+                                    maxHeight: .infinity,
+                                    alignment: .topTrailing
+                                )
+                                .padding(.top, 48)
+                                .padding(.trailing, 16)
+                            
+                            
+                        }
+
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))  // ✅ ẨN dots mặc định
+                .tabViewStyle(.page(indexDisplayMode: .never))  // ẨN dots mặc định
 
                 // Layer 2: Gradient overlay ở bottom
                 LinearGradient(
@@ -94,6 +117,25 @@ struct TutorialsView: View {
                     }
                 }
                 .padding(.bottom, 20)  // Khoảng cách từ bottom
+                
+                CardMatch()
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: .infinity,
+                        alignment: .bottomLeading
+                    )
+                    .padding(.bottom, 80)
+                    .padding(.leading, 16)
+                
+                CardAvatar()
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: .infinity,
+                        alignment: .bottomTrailing
+                    )
+                    .padding(.bottom, 80)
+                    .padding(.trailing, 16)
+
             }
             .frame(height: 400)
 
@@ -121,7 +163,7 @@ struct TutorialsView: View {
                 .padding(.horizontal, 20)  //  Padding 2 bên
 
                 HorizontalItemCarousel(items: featureItems)
-                    // ✅ Không cố định height, để auto resize theo số dòng
+                // ✅ Không cố định height, để auto resize theo số dòng
 
                 // Button để skip/continue
                 Button(action: {
@@ -130,12 +172,12 @@ struct TutorialsView: View {
                     // Navigate đến màn tiếp theo
                     navigateToNext = true
                 }) {
-                
+
                     HStack(spacing: 12) {
                         Text("Get Started")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
-                        
+
                         Image(systemName: "arrow.right")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -168,6 +210,127 @@ struct TutorialsView: View {
     }
 }
 
+struct UserMatch: View {
+    var body: some View {
+        HStack(alignment: .center) {
+            Circle()
+                .frame(width: 48, height: 48)
+                .foregroundColor(.white)
+                .overlay(
+                    Circle()
+                        .stroke(
+                            Color.appPrimary.opacity(0.4),
+                            lineWidth: 3
+                        )
+
+                )
+            VStack(alignment: .leading) {
+                Text("New Match!")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "0xFF94A3B8"))
+                Text("Sophie, 24")
+                    .font(.system(size: 14))
+                    .fontWeight(.bold)
+
+            }
+            Circle()
+                .frame(width: 38, height: 38)
+                .foregroundColor(Color.appPrimary)
+                .overlay {
+                    Image(systemName: "heart.fill").foregroundColor(.white)
+                }
+
+        }
+        .padding(8)
+        .background(.white)
+        .cornerRadius(24)
+
+    }
+}
+
+struct CardMusic: View {
+    var body: some View {
+        HStack(alignment: .center) {
+            Image(systemName: "music.quarternote.3")
+                .foregroundColor(Color.appPrimary)
+            Text("Music Lover")
+                .font(.system(size: 13,weight: .semibold))
+              
+        }
+        .padding(8)
+        .background(.white)
+        .cornerRadius(24)
+    }
+}
+
+
+struct CardMatch: View {
+    var body: some View {
+        HStack(alignment: .center,spacing: 6) {
+            Image(systemName: "star.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.yellow)
+            Image(systemName: "star.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.yellow)
+            
+            Image(systemName: "star.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.yellow)
+            
+            Text("98% Match")
+                .font(.system(size: 13,weight: .semibold))
+        }
+        .padding(8)
+        .background(.white)
+        .cornerRadius(24)
+    }
+}
+
+
+struct CardAvatar: View {
+    var body: some View {
+        HStack(alignment: .center, spacing: 8) {
+         
+            MultiAvatarView(count: 5, size: 28)
+
+            Text("+2.4k")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(Color.appPrimary)
+        }
+        .padding(8)
+        .background(.white)
+        .cornerRadius(24)
+    }
+}
+
+
+struct MultiAvatarView: View {
+    let count: Int
+    let size: CGFloat
+
+    var overlapFraction: CGFloat = 0.4
+
+    var body: some View {
+        HStack(spacing: -size * overlapFraction) {
+            ForEach(0..<count, id: \.self) { index in
+                Image(systemName: "person.fill")
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+                    .background(Circle().fill(Color.gray.opacity(0.3)))
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
+                    .zIndex(Double(index))
+            }
+        }
+        .fixedSize() // avoid expanding unnecessarily
+    }
+}
+
+
+
+
 
 // Model cho các mục trong carousel nằm ngang
 struct ItemCore: Identifiable {
@@ -184,35 +347,35 @@ struct ItemCore: Identifiable {
     }
 }
 
-
-
 // Layout tự động wrap items khi hết chỗ, căn giữa
 struct WrappingHStack<Content: View>: View {
     let content: () -> Content
     let spacing: CGFloat
-    
+
     @State private var totalHeight: CGFloat = 0
-    
+
     init(spacing: CGFloat = 12, @ViewBuilder content: @escaping () -> Content) {
         self.spacing = spacing
         self.content = content
     }
-    
+
     var body: some View {
         GeometryReader { geometry in
             self.generateContent(in: geometry)
         }
         .frame(height: totalHeight)
     }
-    
+
     private func generateContent(in geometry: GeometryProxy) -> some View {
         var width: CGFloat = 0
         var height: CGFloat = 0
         var lineHeight: CGFloat = 0
-        
+
         return ZStack(alignment: .topLeading) {
             // Measure và render children
-            ForEach(Array(zip(getChildren(), getChildren().indices)), id: \.1) { child, index in
+            ForEach(Array(zip(getChildren(), getChildren().indices)), id: \.1) {
+                child,
+                index in
                 child
                     .alignmentGuide(.leading) { dimension in
                         if abs(width - dimension.width) > geometry.size.width {
@@ -237,24 +400,27 @@ struct WrappingHStack<Content: View>: View {
         }
         .background(
             GeometryReader { geo in
-                Color.clear.preference(key: HeightPreferenceKey.self, value: geo.size.height)
+                Color.clear.preference(
+                    key: HeightPreferenceKey.self,
+                    value: geo.size.height
+                )
             }
         )
         .onPreferenceChange(HeightPreferenceKey.self) { value in
             totalHeight = value
         }
     }
-    
+
     private func getChildren() -> [AnyView] {
         var children: [AnyView] = []
         let mirror = Mirror(reflecting: content())
-        
+
         for child in mirror.children {
             if let view = child.value as? AnyView {
                 children.append(view)
             }
         }
-        
+
         return children
     }
 }
@@ -266,12 +432,11 @@ struct HeightPreferenceKey: PreferenceKey {
     }
 }
 
-
 struct HorizontalItemCarousel: View {
     let items: [ItemCore]
-    
+
     var body: some View {
-        
+
         FlowLayout(spacing: 12) {
             ForEach(items) { item in
                 HStack(spacing: 8) {
@@ -279,7 +444,7 @@ struct HorizontalItemCarousel: View {
                     Image(systemName: item.icon)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(item.color)
-                    
+
                     // Text
                     Text(item.text)
                         .font(.system(size: 14, weight: .medium))
@@ -303,24 +468,38 @@ struct HorizontalItemCarousel: View {
 
 struct FlowLayout: Layout {
     var spacing: CGFloat = 12
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
         let result = computeLayout(proposal: proposal, subviews: subviews)
         return result.size
     }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
         let layout = computeLayout(proposal: proposal, subviews: subviews)
-        
+
         for (index, position) in layout.positions.enumerated() {
             subviews[index].place(
-                at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
+                at: CGPoint(
+                    x: bounds.minX + position.x,
+                    y: bounds.minY + position.y
+                ),
                 proposal: .unspecified
             )
         }
     }
-    
-    private func computeLayout(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, positions: [CGPoint]) {
+
+    private func computeLayout(proposal: ProposedViewSize, subviews: Subviews)
+        -> (size: CGSize, positions: [CGPoint])
+    {
         let maxWidth = proposal.width ?? .infinity
         var currentX: CGFloat = 0
         var currentY: CGFloat = 0
@@ -328,11 +507,11 @@ struct FlowLayout: Layout {
         var positions: [CGPoint] = []
         var lines: [[Int]] = [[]]
         var lineWidths: [CGFloat] = [0]
-        
+
         // First pass: compute positions and group into lines
         for (index, subview) in subviews.enumerated() {
             let size = subview.sizeThatFits(.unspecified)
-            
+
             if currentX + size.width > maxWidth && currentX > 0 {
                 // New line
                 currentX = 0
@@ -341,45 +520,53 @@ struct FlowLayout: Layout {
                 lines.append([])
                 lineWidths.append(0)
             }
-            
+
             lines[lines.count - 1].append(index)
-            lineWidths[lines.count - 1] += size.width + (currentX > 0 ? spacing : 0)
-            
+            lineWidths[lines.count - 1] +=
+                size.width + (currentX > 0 ? spacing : 0)
+
             currentX += size.width + spacing
             lineHeight = max(lineHeight, size.height)
         }
-        
+
         // Second pass: center each line and place views
         currentY = 0
         lineHeight = 0
         var lineIndex = 0
-        
+
         for (index, subview) in subviews.enumerated() {
             let size = subview.sizeThatFits(.unspecified)
-            
+
             if !lines[lineIndex].contains(index) {
                 lineIndex += 1
                 currentY += lineHeight + spacing
                 lineHeight = 0
             }
-            
+
             // Center offset for this line
             let lineWidth = lineWidths[lineIndex]
             let centerOffset = (maxWidth - lineWidth) / 2
-            
+
             let positionInLine = lines[lineIndex].firstIndex(of: index) ?? 0
             var lineX: CGFloat = centerOffset
-            
+
             for i in 0..<positionInLine {
                 let prevIndex = lines[lineIndex][i]
-                lineX += subviews[prevIndex].sizeThatFits(.unspecified).width + spacing
+                lineX +=
+                    subviews[prevIndex].sizeThatFits(.unspecified).width
+                    + spacing
             }
-            
+
             positions.append(CGPoint(x: lineX, y: currentY))
             lineHeight = max(lineHeight, size.height)
         }
-        
+
         let totalHeight = currentY + lineHeight
         return (CGSize(width: maxWidth, height: totalHeight), positions)
     }
+}
+
+#Preview {
+    TutorialsView()
+        .environmentObject(StoreEnv(store: StoreImpl()))
 }
