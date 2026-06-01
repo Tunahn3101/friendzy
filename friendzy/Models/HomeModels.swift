@@ -19,7 +19,6 @@ struct MakeFriendsModel: Identifiable, Hashable {
     let name: String
     let bgImage: String
     let favorite: String
-    // new field: location (stored uppercase)
     let location: String
     let iconFavorite: String
     let quote: String

@@ -317,7 +317,7 @@ struct MultiAvatarView: View {
                 Image(systemName: "person.fill")
                     .scaledToFit()
                     .frame(width: size, height: size)
-                    .background(Circle().fill(Color.gray.opacity(0.3)))
+                    .background(Circle().fill(Color.gray))
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.white, lineWidth: 2))
                     .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
