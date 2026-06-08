@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct DiscoverView: View {
     @State private var showSheet = false
@@ -13,13 +14,24 @@ struct DiscoverView: View {
         name: "Germany",
         code: "DE"
     )
+    @State private var selectedInterest: String? = nil  // Track selected interest
 
     var body: some View {
         VStack(spacing: 0) {
             DiscoverHeader(selected: $selectedCountry, showSheet: $showSheet)
-            DiscoverUserList()
-            Spacer()
-
+            
+            ScrollView {
+                VStack(spacing: 0) {
+                    DiscoverUserList()
+                    Interest(selectedInterest: $selectedInterest)
+                    
+                    // Map View
+                    MapDiscoverView(selectedInterest: selectedInterest)
+                        .frame(height: 400)
+                        .padding(.top, 16)
+                        .padding(.bottom, 40)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
@@ -51,14 +63,180 @@ struct DiscoverView: View {
     }
 }
 
+
+struct Interest: View {
+    @State private var interests: [InterestModel] = sampleInterests
+    @State private var showAllInterests: Bool = false
+    @Binding var selectedInterest: String?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Interest")
+                    .font(.system(size: 18, weight: .bold))
+                Spacer()
+                Button("View All") {
+                    showAllInterests = true
+                }
+                .foregroundColor(Color.appPrimary)
+            }
+            
+            InterestGridView(interests: Array(interests.prefix(8)), selectedInterest: $selectedInterest)
+        }
+        .padding(.horizontal, 16)
+        .sheet(isPresented: $showAllInterests) {
+            InterestDetailView(interests: $interests, selectedInterest: $selectedInterest)
+        }
+    }
+}
+
+
+struct InterestGridView: View {
+    let interests: [InterestModel]
+    @Binding var selectedInterest: String?
+    
+    var body: some View {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 2)
+        
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHGrid(rows: columns, spacing: 8) {
+                ForEach(interests) { interest in
+                    InterestCard(
+                        interest: interest,
+                        isActive: selectedInterest == interest.name
+                    )
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3)) {
+                            if selectedInterest == interest.name {
+                                selectedInterest = nil  // Toggle off
+                            } else {
+                                selectedInterest = interest.name  // Select new
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+
+struct InterestCard: View {
+    let interest: InterestModel
+    var isActive: Bool = false
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: interest.icon)
+                .font(.system(size: 16))
+                .foregroundColor(isActive ? .white : interest.color)
+                .frame(width: 32, height: 32)
+                .background(isActive ? interest.color : interest.color.opacity(0.15))
+                .clipShape(Circle())
+            
+            Text(interest.name)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(isActive ? .white : .primary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(minWidth: 130, alignment: .leading)
+        .background(isActive ? interest.color : Color(UIColor.secondarySystemBackground))
+        .cornerRadius(20)
+    }
+}
+
+
+struct InterestDetailView: View {
+    @Binding var interests: [InterestModel]
+    @Binding var selectedInterest: String?
+    @Environment(\.dismiss) private var dismiss
+    
+    let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(interests) { interest in
+                        let isActive = selectedInterest == interest.name
+                        
+                        Button {
+                            withAnimation(.spring(response: 0.3)) {
+                                if isActive {
+                                    selectedInterest = nil
+                                } else {
+                                    selectedInterest = interest.name
+                                }
+                            }
+                        } label: {
+                            VStack(spacing: 12) {
+                                Image(systemName: interest.icon)
+                                    .font(.system(size: 32))
+                                    .foregroundColor(isActive ? .white : interest.color)
+                                    .frame(width: 64, height: 64)
+                                    .background(isActive ? interest.color : interest.color.opacity(0.15))
+                                    .clipShape(Circle())
+                                
+                                Text(interest.name)
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(isActive ? .white : .primary)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                
+                                // Checkmark indicator
+                                ZStack {
+                                    if isActive {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.white)
+                                            .font(.system(size: 20))
+                                    }
+                                }
+                                .frame(height: 20)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
+                            .padding(.horizontal, 12)
+                            .background(isActive ? interest.color : Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(20)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
+            }
+            .navigationTitle("Interests")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.appPrimary)
+                }
+            }
+        }
+    }
+}
+
+
+
 struct DiscoverUserList: View {
     let listUserDiscover: [UserModel] = sampleDiscoverUsers
 
     var body: some View {
-        GeometryReader { geo in
-            let available = geo.size.width
-            let cardWidth = max(96, min(160, available * 0.28))
+        GeometryReader { geometry in
+            let screenWidth = geometry.size.width
+            let cardWidth = max(96, min(160, screenWidth * 0.28))
             let cardHeight = cardWidth * (181.0 / 120.0)
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 12) {
                     ForEach(listUserDiscover) { user in
@@ -141,11 +319,10 @@ struct DiscoverUserList: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
             }
-            // set the scroll area height to match the computed card height + paddings
-            .frame(height: cardHeight + 16)
+            .frame(height: cardHeight + 40)
             .padding(.top, 16)
         }
-
+        .frame(height: 220)
     }
 }
 
@@ -374,6 +551,107 @@ struct ChooseLocation: View {
         }
     }
 
+}
+
+// Map View Component
+struct MapDiscoverView: View {
+    var selectedInterest: String?
+    @State private var region = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050),  // Berlin
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    )
+    
+    private var filteredUsers: [MapUserModel] {
+        if let interest = selectedInterest {
+            return sampleMapUsers.filter { $0.interests.contains(interest) }
+        }
+        return sampleMapUsers
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Nearby")
+                    .font(.system(size: 18, weight: .bold))
+                
+                if let interest = selectedInterest {
+                    Text("· \(interest)")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color.appPrimary)
+                }
+                
+                Spacer()
+                
+                Text("\(filteredUsers.count) people")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 16)
+            
+            if #available(iOS 17.0, *) {
+                Map {
+                    ForEach(filteredUsers) { user in
+                        Annotation(user.name, coordinate: user.coordinate) {
+                            UserMapPin(user: user)
+                        }
+                    }
+                }
+                .cornerRadius(16)
+                .padding(.horizontal, 16)
+            } else {
+                Map(coordinateRegion: $region, annotationItems: filteredUsers) { user in
+                    MapAnnotation(coordinate: user.coordinate) {
+                        UserMapPin(user: user)
+                    }
+                }
+                .cornerRadius(16)
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
+// Custom Map Pin
+struct UserMapPin: View {
+    let user: MapUserModel
+    @State private var showDetail = false
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Avatar
+            Image(user.avatarURL)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 40, height: 40)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.white, lineWidth: 3)
+                )
+                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                .onTapGesture {
+                    withAnimation {
+                        showDetail.toggle()
+                    }
+                }
+            
+            // Info card khi tap
+            if showDetail {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(user.name), \(user.age)")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("\(user.distance) km away")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+                .padding(8)
+                .background(Color.white)
+                .cornerRadius(8)
+                .shadow(radius: 4)
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+    }
 }
 
 #Preview {
