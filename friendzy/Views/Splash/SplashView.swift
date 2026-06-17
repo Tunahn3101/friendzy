@@ -19,7 +19,7 @@ struct SplashView: View {
 
             Image(systemName: "heart.fill")
                 .font(.system(size: 80))
-                .foregroundColor(.appPrimary)  // ✅ Dùng màu base
+                .foregroundColor(.appPrimary) 
             //            Spacer(minLength: 16)
             Text("Friendzy")
                 .font(.system(size: 36, weight: .bold))

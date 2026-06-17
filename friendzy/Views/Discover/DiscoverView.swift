@@ -24,8 +24,6 @@ struct DiscoverView: View {
                 VStack(spacing: 0) {
                     DiscoverUserList()
                     Interest(selectedInterest: $selectedInterest)
-                    
-                    // Map View
                     MapDiscoverView(selectedInterest: selectedInterest)
                         .frame(height: 400)
                         .padding(.top, 16)
@@ -230,7 +228,6 @@ struct InterestDetailView: View {
 
 struct DiscoverUserList: View {
     let listUserDiscover: [UserModel] = sampleDiscoverUsers
-
     var body: some View {
         GeometryReader { geometry in
             let screenWidth = geometry.size.width
