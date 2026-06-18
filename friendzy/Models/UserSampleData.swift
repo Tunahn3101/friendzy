@@ -15,7 +15,26 @@ struct UserModel: Identifiable, Hashable {
     let age: Int
     let distance: String
     let percentMatch: Int
-    
+    let recentMatches: Int?
+
+    init(
+        name: String,
+        avatarURL: String,
+        location: String,
+        age: Int,
+        distance: String,
+        percentMatch: Int,
+        recentMatches: Int? = nil,
+    ) {
+        self.name = name
+        self.avatarURL = avatarURL
+        self.location = location
+        self.age = age
+        self.distance = distance
+        self.percentMatch = percentMatch
+        self.recentMatches = recentMatches
+    }
+
 }
 
 let sampleDiscoverUsers: [UserModel] = [
@@ -26,6 +45,7 @@ let sampleDiscoverUsers: [UserModel] = [
         age: 19,
         distance: "16",
         percentMatch: 100,
+        recentMatches: 32,
     ),
     UserModel(
         name: "Vanessa",
@@ -34,7 +54,7 @@ let sampleDiscoverUsers: [UserModel] = [
         age: 18,
         distance: "4,8",
         percentMatch: 90,
-        
+      
     ),
     UserModel(
         name: "James",
@@ -51,6 +71,7 @@ let sampleDiscoverUsers: [UserModel] = [
         age: 23,
         distance: "2",
         percentMatch: 70,
+        recentMatches: 48,
     ),
     UserModel(
         name: "Brandon",
@@ -59,6 +80,7 @@ let sampleDiscoverUsers: [UserModel] = [
         age: 20,
         distance: "2,5",
         percentMatch: 60,
+        recentMatches: 36,
     ),
     UserModel(
         name: "Alfredo",

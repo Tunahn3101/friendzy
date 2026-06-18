@@ -9,7 +9,6 @@ import SwiftUI
 
 struct MatchesView: View {
     let listSampleMatches = Array(sampleMatchesUsers.prefix(2))
-
     var body: some View {
         VStack(spacing: 0) {
             MatchesHeader()
