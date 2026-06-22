@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @StateObject private var viewModel = UserViewModel()
+    @EnvironmentObject var auth: AuthViewModel
     
     var body: some View {
         NavigationView {
@@ -21,9 +21,9 @@ struct ProfileView: View {
                             .foregroundColor(.blue)
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(viewModel.currentUser?.name ?? "Người dùng")
+                            Text(auth.currentUser?.displayName ?? "Người dùng")
                                 .font(.headline)
-                            Text(viewModel.currentUser?.email ?? "email@example.com")
+                            Text(auth.currentUser?.email ?? "email@example.com")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -47,7 +47,7 @@ struct ProfileView: View {
                 
                 Section {
                     Button(action: {
-                        viewModel.logout()
+                        auth.signOut()
                     }) {
                         HStack {
                             Spacer()
@@ -65,4 +65,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
+        .environmentObject(AuthViewModel())
 }

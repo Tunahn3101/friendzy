@@ -38,12 +38,4 @@ class StoreImpl: Store {
     func setNoteFirstStart() {
         UserDefaults.standard.set(true, forKey: "has_seen_tutorials")
     }
-
-    func isLoggedIn() -> Bool {
-        return UserDefaults.standard.bool(forKey: "is_logged_in")
-    }
-
-    func setLoggedIn(_ value: Bool) {
-        UserDefaults.standard.set(value, forKey: "is_logged_in")
-    }
 }

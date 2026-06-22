@@ -10,10 +10,30 @@ import SwiftUI
 struct ContentView: View {
 
     @StateObject var store = StoreEnv(store: StoreImpl())
+    @StateObject var auth = AuthViewModel()
+    @StateObject var splVM = SplashViewModel()
+
     var body: some View {
-        NavigationStack {
-            SplashView()
+        Group {
+            if splVM.loadStatus == .loading || auth.authState == .loading {
+                SplashView(splVM: splVM)
+            } else if splVM.isFirstStart {
+                NavigationStack {
+                    TutorialsView(splVM: splVM)
+                }
+            } else {
+                switch auth.authState {
+                case .authenticated:
+                    TabbarView()
+                case .unauthenticated, .error:
+                    NavigationStack {
+                        LoginView()
+                    }
+                }
+            }
         }
         .environmentObject(store)
+        .environmentObject(auth)
     }
 }
+

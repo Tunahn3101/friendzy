@@ -8,8 +8,8 @@ import SwiftUI
 
 struct SplashView: View {
     @EnvironmentObject var storeEnv: StoreEnv
-    @StateObject var splVM = SplashViewModel()
-    @State var isShowNext = false
+    @EnvironmentObject var auth: AuthViewModel
+    @ObservedObject var splVM: SplashViewModel
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
@@ -51,28 +51,8 @@ struct SplashView: View {
                 splVM.store = storeEnv.store  // Inject store vào ViewModel
                 await splVM.loadSplash()
             }
-        }
-        .onChange(of: splVM.loadStatus) { oldValue, newValue in
-            // Reactively watch loadStatus thay vì check 1 lần trong onAppear
-            if newValue == .success {
-                isShowNext = true
-            }
-        }
-        .navigationDestination(isPresented: $isShowNext) {
-
-            // 1. Ưu tiên: Nếu chưa xem tutorials → Tutorials (first time user)
-            // 2. Nếu đã xem tutorials + đã login → Home
-            // 3. Nếu đã xem tutorials + chưa login → Login
-
-            if splVM.isFirstStart {
-                // Lần đầu chạy app → phải xem tutorials trước
-                TutorialsView()
-            } else if splVM.isLoggedIn {
-                // Đã xem tutorials + đã login → vào Home
-                TabbarView()
-            } else {
-                // Đã xem tutorials + chưa login → vào Login
-                LoginView()
+            Task {
+                await auth.restoreSession()
             }
         }
     }

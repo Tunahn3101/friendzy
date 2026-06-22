@@ -14,7 +14,6 @@ class SplashViewModel: ObservableObject {
     @Published var percent: Double = 0.0
     @Published var loadStatus = LoadStatus.loading
     @Published var isFirstStart = false
-    @Published var isLoggedIn = false
     var store: Store?
 
     func loadSplash() async {
@@ -43,11 +42,11 @@ class SplashViewModel: ObservableObject {
         // Load xong → set success và load user state
         loadStatus = .success
         isFirstStart = store?.isirstStart() ?? true
-        isLoggedIn = store?.isLoggedIn() ?? false
     }
 
     func setSecondStart() {
         store?.setNoteFirstStart()
+        isFirstStart = false
     }
 
 }

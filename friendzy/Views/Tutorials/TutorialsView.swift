@@ -10,7 +10,7 @@ import SwiftUI
 
 struct TutorialsView: View {
     @EnvironmentObject var storeEnv: StoreEnv
-    @State private var navigateToNext = false
+    @ObservedObject var splVM: SplashViewModel
     @State private var currentIndex = 0
 
     private let images = [
@@ -168,9 +168,7 @@ struct TutorialsView: View {
                 // Button để skip/continue
                 Button(action: {
                     // Đánh dấu đã xem tutorials
-                    storeEnv.store.setNoteFirstStart()
-                    // Navigate đến màn tiếp theo
-                    navigateToNext = true
+                    splVM.setSecondStart()
                 }) {
 
                     HStack(spacing: 12) {
@@ -197,14 +195,6 @@ struct TutorialsView: View {
         .onReceive(timer) { _ in
             //  Timer sẽ trigger block này
             currentIndex = (currentIndex + 1) % images.count
-        }
-        .navigationDestination(isPresented: $navigateToNext) {
-            // Sau khi xem tutorials → check login
-            if storeEnv.store.isLoggedIn() {
-                TabbarView()  // ✅ Navigate to TabbarView instead of HomeView
-            } else {
-                LoginView()
-            }
         }
         .navigationBarBackButtonHidden(true)  // Ẩn back button
     }
@@ -567,6 +557,6 @@ struct FlowLayout: Layout {
 }
 
 #Preview {
-    TutorialsView()
+    TutorialsView(splVM: SplashViewModel())
         .environmentObject(StoreEnv(store: StoreImpl()))
 }

@@ -19,8 +19,5 @@ protocol Store {
     func loadInitData(onProgress: ((Double) -> Void)) async throws
     func isirstStart() -> Bool
     func setNoteFirstStart()
-    func isLoggedIn() -> Bool
-    func setLoggedIn(_ value: Bool)
-
 }
 
