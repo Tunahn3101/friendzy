@@ -50,9 +50,7 @@ struct SplashView: View {
             Task {
                 splVM.store = storeEnv.store  // Inject store vào ViewModel
                 await splVM.loadSplash()
-            }
-            Task {
-                await auth.restoreSession()
+                await auth.restoreSession(isFirstStart: splVM.isFirstStart)
             }
         }
     }

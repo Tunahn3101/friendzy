@@ -25,10 +25,12 @@ struct ContentView: View {
                 switch auth.authState {
                 case .authenticated:
                     TabbarView()
-                case .unauthenticated, .error:
+                case .unauthenticated, .error(_):
                     NavigationStack {
                         LoginView()
                     }
+                case .loading:
+                    SplashView(splVM: splVM)
                 }
             }
         }

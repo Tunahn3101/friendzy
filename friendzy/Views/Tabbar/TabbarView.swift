@@ -25,22 +25,22 @@ struct TabbarView: View {
                     Label("Discover", systemImage: "safari")
                 }
             
-            AddFriendView()
-                .tag(2)
-                .tabItem {
-                    Label("Add", systemImage: "plus.circle")
-                }
-            
             MatchesView()
-                .tag(3)
+                .tag(2)
                 .tabItem {
                     Label("Matches", systemImage: "heart")
                 }
             
             MessageView()
-                .tag(4)
+                .tag(3)
                 .tabItem {
                     Label("Messages", systemImage: "message")
+                }
+            
+            ProfileView()
+                .tag(4)
+                .tabItem {
+                    Label("Profile", systemImage: "person")
                 }
         }
         .tint(.appPrimary)

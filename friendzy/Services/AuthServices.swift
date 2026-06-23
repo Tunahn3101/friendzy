@@ -14,7 +14,8 @@ final class AuthServices {
 
     private init() {}
 
-    func signInGoogle() async throws -> User {
+    @MainActor
+    func signInGoogle() async throws -> FirebaseAuth.User {
 
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             throw NSError(domain: "AuthServices", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing configuration"])
@@ -25,7 +26,7 @@ final class AuthServices {
         GIDSignIn.sharedInstance.configuration = config
 
         guard
-            let scene = await UIApplication.shared.connectedScenes.first
+            let scene = UIApplication.shared.connectedScenes.first
                 as? UIWindowScene,
             let rootViewController = scene.windows.first?.rootViewController
         else {
@@ -51,6 +52,19 @@ final class AuthServices {
         
         print("Login successful: \(authResult.user.email ?? "No Email")")
         
+        return authResult.user
+    }
+
+    func signUp(email: String, password: String, displayName: String) async throws -> FirebaseAuth.User {
+        let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
+        let changeRequest = authResult.user.createProfileChangeRequest()
+        changeRequest.displayName = displayName
+        try await changeRequest.commitChanges()
+        return authResult.user
+    }
+
+    func signIn(email: String, password: String) async throws -> FirebaseAuth.User {
+        let authResult = try await Auth.auth().signIn(withEmail: email, password: password)
         return authResult.user
     }
     

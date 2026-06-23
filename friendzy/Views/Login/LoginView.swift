@@ -13,6 +13,8 @@ struct LoginView: View {
 
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingError = false
+    @State private var navigateToEmailLogin = false
+    @State private var navigateToSignUp = false
 
     var body: some View {
         VStack {
@@ -33,15 +35,14 @@ struct LoginView: View {
             VStack(spacing: 16) {
 
                 ButtonItem(
-                    icon: "phone.connection",
-                    text: "Login with Phone",
-                    color: .green,
+                    icon: "envelope.fill",
+                    text: "Login with Email",
+                    color: Color.appPrimary,
                     textColor: .white,
                     isSystemImage: true,
                     isLoading: authViewModel.isLoading
                 ) {
-                    print("Phone login tapped")
-                    handlePhoneLogin()
+                    navigateToEmailLogin = true
                 }
                 .disabled(authViewModel.isLoading)
 
@@ -68,7 +69,7 @@ struct LoginView: View {
                     .foregroundColor(.black)
 
                 Button(action: {
-                    print("Sign Up")
+                    navigateToSignUp = true
                 }) {
                     Text("Sign Up")
                         .font(.system(size: 14, weight: .semibold))
@@ -81,6 +82,12 @@ struct LoginView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $navigateToEmailLogin) {
+            EmailLoginView()
+        }
+        .navigationDestination(isPresented: $navigateToSignUp) {
+            SignUpView()
+        }
         .onChange(of: authViewModel.authState) { old, new in
             if case .error(_) = new {
                 showingError = true
@@ -95,10 +102,6 @@ struct LoginView: View {
 
     private func handleGoogleLogin() {
         Task { await authViewModel.loginGoogle() }
-    }
-
-    private func handlePhoneLogin() {
-        //        authViewModel.loginGoogle()
     }
 }
 

@@ -21,24 +21,24 @@ enum AuthState: Equatable {
 final class AuthViewModel: ObservableObject {
     /// Indicates an ongoing auth operation to disable repeated taps.
     @Published var isLoading = false
-
+    
     /// Source of truth for authentication status.
-    @Published var authState: AuthState = .unauthenticated
-
+    @Published var authState: AuthState = .loading
+    
     /// Optional error message to present to the user.
     @Published var errorMessage: String? = nil
-
+    
     /// The currently authenticated Firebase user.
     var currentUser: FirebaseAuth.User? {
         Auth.auth().currentUser
     }
-
+    
     /// Starts Google Sign-In flow. Updates `authState` upon completion.
     func loginGoogle() async {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
-
+        
         do {
             _ = try await AuthServices.shared.signInGoogle()
             // If sign-in succeeds, mark as authenticated. Session/token handling is inside AuthServices.
@@ -51,15 +51,57 @@ final class AuthViewModel: ObservableObject {
             self.authState = .error(message)
         }
     }
-
+    
     /// Attempts to restore a previous session (silent sign-in).
     /// Integrate with your session persistence (e.g., FirebaseAuth.currentUser) here.
-    func restoreSession() async {
+    func restoreSession(isFirstStart: Bool) async {
         self.authState = .loading
-        if Auth.auth().currentUser != nil {
-            self.authState = .authenticated
+        if isFirstStart {
+            // Fresh install -> clear leftover Firebase/Google credentials from Keychain
+            signOut()
         } else {
-            self.authState = .unauthenticated
+            if Auth.auth().currentUser != nil {
+                self.authState = .authenticated
+            } else {
+                self.authState = .unauthenticated
+            }
+        }
+    }
+    
+    /// Registers a new user with email and password, and signs them in.
+    func signUp(email: String, password: String, displayName: String) async -> Bool {
+        guard !isLoading else { return false }
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            _ = try await AuthServices.shared.signUp(email: email, password: password, displayName: displayName)
+            return true
+        } catch {
+            let message = error.localizedDescription
+            self.errorMessage = message
+            self.authState = .error(message)
+            return false
+        }
+    }
+    
+    func setAuthenticated() {
+        self.authState = .authenticated
+    }
+    
+    /// Signs in an existing user with email and password.
+    func signIn(email: String, password: String) async {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            _ = try await AuthServices.shared.signIn(email: email, password: password)
+            self.authState = .authenticated
+        } catch {
+            let message = error.localizedDescription
+            self.errorMessage = message
+            self.authState = .error(message)
         }
     }
 

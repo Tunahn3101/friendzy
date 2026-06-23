@@ -30,7 +30,8 @@ struct TutorialsView: View {
     private let timer = Timer.publish(every: 2.5, on: .main, in: .common)
         .autoconnect()
 
-    init() {
+    init(splVM: SplashViewModel) {
+        self.splVM = splVM
 
         UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(
             red: 0.867,
